@@ -1,3 +1,4 @@
+from fileinput import hook_compressed
 from math import sqrt
 import cv2
 import numpy as np
@@ -37,6 +38,18 @@ def delete_path(sons, i, j, img,matrix_aux):
     if sons[i][j] == [-1,-1]:
         # img[i][j] = [0,0,0]
         del matrix_aux[i][j]
+        #img[i].pop(j)
+        return
+    # img[i][j] = [0,0,0]
+    del matrix_aux[i][j]
+    
+    #img[i].pop(j)
+    delete_path(sons, sons[i][j][0], sons[i][j][1], img,matrix_aux)
+def delete_path2(sons, i, j, img,matrix_aux):
+    
+    if sons[j][i] == [-1,-1]:
+        # img[i][j] = [0,0,0]
+        del matrix_aux[i][j]
         
         
         #img[i].pop(j)
@@ -45,8 +58,7 @@ def delete_path(sons, i, j, img,matrix_aux):
     del matrix_aux[i][j]
     
     #img[i].pop(j)
-    delete_path(sons, sons[i][j][0], sons[i][j][1], img,matrix_aux)
-
+    delete_path2(sons, sons[j][i][1], sons[j][i][0], img,matrix_aux)
 
 
     """
@@ -115,16 +127,14 @@ def vertical_seam(img, n):
         img=np.array(matrix_aux)
         
 
-        # cv2.imwrite("aqp2.png",img)
-        # cv2.waitKey(0)
+        #cv2.imwrite("aqp2.png",img)
+        #cv2.waitKey(0)
 
-
+    return img
 # Horizontal seam
 
 def horizontal_seam(img,n):
-   
-    
-    
+
     for i in range(n):
         r = img.shape[0]
         c = img.shape[1]
@@ -170,24 +180,35 @@ def horizontal_seam(img,n):
                 if j == 0 and min_dist > accumulated_energy[i][j]:
                     min_dist = accumulated_energy[i][j]
                     min_index = [i,j]
-        
-        matrix_aux=img.tolist()
+        #print(sons)
+        matrix_aux = img.tolist()
         #new_img = img.tolist()
-        delete_path(sons,min_index[0],min_index[1],img)
+        transpuesta2 = transpuesta(matrix_aux)
+        #tranpose = np.transpose(matrix_aux).tolist()
+        #rse3= (np.transpose(traa))
+        #print("tranpose ",tranpose)
+        delete_path2(sons,min_index[1],min_index[0],img,transpuesta2)
         #img = np.array(new_img)
-        img=np.array(matrix_aux)
-
-        # cv2.imwrite("aqp2.png",img)
+        transpuesta2 = transpuesta(transpuesta2)
+        img=np.array(transpuesta2)
+    return img
+        #cv2.imwrite("aqp3.png",img)
         # cv2.waitKey(0)
 
 def Seam_carving(img,num_rows_to_delete,num_col_to_delete):
-    vertical_seam(img,num_col_to_delete)
-    horizontal_seam(img,num_rows_to_delete)   
-    cv2.imwrite("aqp2.png",img)
-    cv2.waitKey(0)
+    img2 = vertical_seam(img,num_col_to_delete)
+    
+    img3 = horizontal_seam(img2,num_rows_to_delete)   
+    cv2.imwrite("aqp8.png",img3)
+    
 
-
-
+def transpuesta(matrix):
+    matrix_transpuesta = []
+    for i in range(len(matrix[0])):
+        matrix_transpuesta.append([])
+        for j in range(len(matrix)):
+            matrix_transpuesta[i].append(matrix[j][i])
+    return matrix_transpuesta
 img = cv2.imread("aqp.png")
 # img[0][0]=[0,0,0]
 # img[1][1]=[0,0,0]
@@ -198,12 +219,13 @@ img = cv2.imread("aqp.png")
 
 # Vertical seam
 
-vertical_seam(img,30)
-# Seam_carving(img,30,5)
+#vertical_seam(img,30)
+#horizontal_seam(img,10)
+Seam_carving(img,5,5)
 
-cv2.imshow("aqp2.png",img)
+#cv2.imshow("aqp2.png",img)
 # cv2.imshow("aqp.png",cv2.imread("aqp.png"))
-cv2.waitKey(0)
+#cv2.waitKey(0)
 # #horizontal_seam(energy_matrix,img.shape[0],img.shape[1])
 # # matrix_aux=[]
 # matrix_aux=img.tolist()
@@ -225,4 +247,3 @@ cv2.waitKey(0)
 
 
 # # Horizontal seams
-
